@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:io';
 
 import 'package:camerawesome/camerawesome_plugin.dart';
 import 'package:camerawesome/pigeon.dart';
@@ -7,15 +6,17 @@ import 'package:camerawesome/src/logger.dart';
 import 'package:camerawesome/src/orchestrator/models/camera_physical_button.dart';
 import 'package:camerawesome/src/orchestrator/models/sensor_type.dart';
 import 'package:camerawesome/src/orchestrator/models/video_options.dart';
+import 'package:camerawesome/src/web/camerawesome_web.dart';
 import 'package:collection/collection.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
+import 'package:universal_platform/universal_platform.dart';
 
 export 'src/camera_characteristics/camera_characteristics.dart';
 export 'src/orchestrator/analysis/analysis_controller.dart';
 export 'src/orchestrator/models/models.dart';
 export 'src/orchestrator/states/states.dart';
 export 'src/widgets/camera_awesome_builder.dart';
-
 // built in widgets
 export 'src/widgets/widgets.dart';
 
@@ -49,8 +50,11 @@ class CamerawesomePlugin {
   /// Set it to true to print dart logs from camerawesome
   static bool printLogs = false;
 
+  static CameraInterface _getInterface() =>
+      kIsWeb ? CamerawesomeWeb() : CameraInterface();
+
   static Future<bool?> checkiOSPermissions() async {
-    final permissions = await CameraInterface().checkPermissions();
+    final permissions = await _getInterface().checkPermissions();
     return permissions.isEmpty;
   }
 
@@ -60,7 +64,7 @@ class CamerawesomePlugin {
       return true;
     }
     currentState = CameraRunningState.starting;
-    bool res = await CameraInterface().start();
+    bool res = await _getInterface().start();
     if (res) currentState = CameraRunningState.started;
     return res;
   }
@@ -74,7 +78,7 @@ class CamerawesomePlugin {
     currentState = CameraRunningState.stopping;
     bool res;
     try {
-      res = await CameraInterface().stop();
+      res = await _getInterface().stop();
     } catch (e) {
       return false;
     }
@@ -166,7 +170,7 @@ class CamerawesomePlugin {
   }
 
   static Future receivedImageFromStream() {
-    return CameraInterface().receivedImageFromStream();
+    return _getInterface().receivedImageFromStream();
   }
 
   static Future<bool?> init(
@@ -176,7 +180,7 @@ class CamerawesomePlugin {
     CaptureMode captureMode = CaptureMode.photo,
     required ExifPreferences exifPreferences,
   }) async {
-    return CameraInterface()
+    return _getInterface()
         .setupCamera(
           sensorConfig.sensor.name.toUpperCase(),
           sensorConfig.aspectRatio.name.toUpperCase(),
@@ -192,7 +196,7 @@ class CamerawesomePlugin {
   }
 
   static Future<List<Size>> getSizes() async {
-    final availableSizes = await CameraInterface().availableSizes();
+    final availableSizes = await _getInterface().availableSizes();
     return availableSizes
         .whereType<PreviewSize>()
         .map((e) => Size(e.width, e.height))
@@ -200,22 +204,22 @@ class CamerawesomePlugin {
   }
 
   static Future<num?> getPreviewTexture() {
-    return CameraInterface().getPreviewTextureId();
+    return _getInterface().getPreviewTextureId();
   }
 
   static Future<void> setPreviewSize(int width, int height) {
-    return CameraInterface().setPreviewSize(
+    return _getInterface().setPreviewSize(
         PreviewSize(width: width.toDouble(), height: height.toDouble()));
   }
 
   static Future<void> refresh() {
-    return CameraInterface().refresh();
+    return _getInterface().refresh();
   }
 
   /// android has a limits on preview size and fallback to 1920x1080 if preview is too big
   /// So to prevent having different ratio we get the real preview Size directly from nativ side
   static Future<PreviewSize> getEffectivPreviewSize() async {
-    final ps = await CameraInterface().getEffectivPreviewSize();
+    final ps = await _getInterface().getEffectivPreviewSize();
     if (ps != null) {
       return PreviewSize(width: ps.width, height: ps.height);
     } else {
@@ -227,7 +231,7 @@ class CamerawesomePlugin {
   /// you can set a different size for preview and for photo
   /// for iOS, when taking a photo, best quality is automatically used
   static Future<void> setPhotoSize(int width, int height) {
-    return CameraInterface().setPhotoSize(
+    return _getInterface().setPhotoSize(
       PreviewSize(
         width: width.toDouble(),
         height: height.toDouble(),
@@ -236,18 +240,18 @@ class CamerawesomePlugin {
   }
 
   static Future<bool> takePhoto(String path) async {
-    return CameraInterface().takePhoto(path);
+    return _getInterface().takePhoto(path);
   }
 
   static Future<void> recordVideo(
     String path, {
     CupertinoVideoOptions? cupertinoVideoOptions,
   }) {
-    if (Platform.isAndroid) {
+    if (UniversalPlatform.isAndroid) {
       // TODO: add video options for Android
-      return CameraInterface().recordVideo(path, null);
+      return _getInterface().recordVideo(path, null);
     } else {
-      return CameraInterface().recordVideo(
+      return _getInterface().recordVideo(
         path,
         cupertinoVideoOptions != null
             ? VideoOptions(
@@ -260,24 +264,24 @@ class CamerawesomePlugin {
   }
 
   static pauseVideoRecording() {
-    CameraInterface().pauseVideoRecording();
+    _getInterface().pauseVideoRecording();
   }
 
   static resumeVideoRecording() {
-    return CameraInterface().resumeVideoRecording();
+    return _getInterface().resumeVideoRecording();
   }
 
   static stopRecordingVideo() {
-    return CameraInterface().stopRecordingVideo();
+    return _getInterface().stopRecordingVideo();
   }
 
   /// Switch flash mode from Android / iOS
   static Future<void> setFlashMode(FlashMode flashMode) {
-    return CameraInterface().setFlashMode(flashMode.name.toUpperCase());
+    return _getInterface().setFlashMode(flashMode.name.toUpperCase());
   }
 
   static startAutoFocus() {
-    return CameraInterface().handleAutoFocus();
+    return _getInterface().handleAutoFocus();
   }
 
   /// Start auto focus on a specific [position] with a given [previewSize].
@@ -295,7 +299,7 @@ class CamerawesomePlugin {
     required Offset position,
     required AndroidFocusSettings? androidFocusSettings,
   }) {
-    return CameraInterface().focusOnPoint(
+    return _getInterface().focusOnPoint(
       previewSize,
       position.dx,
       position.dy,
@@ -305,24 +309,24 @@ class CamerawesomePlugin {
 
   /// calls zoom from Android / iOS --
   static Future<void> setZoom(num zoom) {
-    return CameraInterface().setZoom(zoom.toDouble());
+    return _getInterface().setZoom(zoom.toDouble());
   }
 
   /// switch camera sensor between [Sensors.back] and [Sensors.front]
   /// on iOS, you can specify the deviceId if you have multiple cameras
   /// call [getSensors] to get the list of available cameras
   static Future<void> setSensor(Sensors sensor, {String? deviceId}) {
-    return CameraInterface().setSensor(sensor.name.toUpperCase(), deviceId);
+    return _getInterface().setSensor(sensor.name.toUpperCase(), deviceId);
   }
 
   /// change capture mode between [CaptureMode.photo] and [CaptureMode.video]
   static Future<void> setCaptureMode(CaptureMode captureMode) {
-    return CameraInterface().setCaptureMode(captureMode.name.toUpperCase());
+    return _getInterface().setCaptureMode(captureMode.name.toUpperCase());
   }
 
   /// enable audio mode recording or not
   static Future<void> setAudioMode(bool enableAudio) {
-    return CameraInterface().setRecordingAudioMode(enableAudio);
+    return _getInterface().setRecordingAudioMode(enableAudio);
   }
 
   /// set exif preferences when a photo is saved
@@ -332,7 +336,7 @@ class CamerawesomePlugin {
   /// - ExifPreferences.saveGPSLocation is false
   /// - Permission ACCESS_FINE_LOCATION has not been granted
   static Future<bool> setExifPreferences(ExifPreferences savedExifData) {
-    return CameraInterface().setExifPreferences(savedExifData);
+    return _getInterface().setExifPreferences(savedExifData);
   }
 
   /// set brightness manually with range [0,1]
@@ -345,12 +349,12 @@ class CamerawesomePlugin {
 
   /// returns the max zoom available on device
   static Future<num?> getMaxZoom() {
-    return CameraInterface().getMaxZoom();
+    return _getInterface().getMaxZoom();
   }
 
   /// Change aspect ratio when a photo is taken
   static Future<void> setAspectRatio(String ratio) {
-    return CameraInterface().setAspectRatio(ratio.toUpperCase());
+    return _getInterface().setAspectRatio(ratio.toUpperCase());
   }
 
   // TODO: implement it on Android
@@ -361,12 +365,12 @@ class CamerawesomePlugin {
   ///
   /// Only available on iOS for now
   static Future<SensorDeviceData> getSensors() async {
-    if (Platform.isAndroid) {
+    if (UniversalPlatform.isAndroid) {
       return Future.value(SensorDeviceData());
     } else {
       // Can't use getter with pigeon, so we have to map the data manually...
-      final frontSensors = await CameraInterface().getFrontSensors();
-      final backSensors = await CameraInterface().getBackSensors();
+      final frontSensors = await _getInterface().getFrontSensors();
+      final backSensors = await _getInterface().getBackSensors();
 
       final frontSensorsData = frontSensors
           .map(
@@ -430,8 +434,8 @@ class CamerawesomePlugin {
   static Future<List<CamerAwesomePermission>?> checkAndRequestPermissions(
       bool saveGpsLocation) async {
     try {
-      if (Platform.isAndroid) {
-        return CameraInterface()
+      if (UniversalPlatform.isAndroid) {
+        return _getInterface()
             .requestPermissions(saveGpsLocation)
             .then((givenPermissions) {
           return givenPermissions
@@ -439,7 +443,7 @@ class CamerawesomePlugin {
                   .firstWhere((element) => element.name == e))
               .toList();
         });
-      } else if (Platform.isIOS) {
+      } else if (UniversalPlatform.isIOS) {
         // TODO iOS Return only permissions that were given
         return CamerawesomePlugin.checkiOSPermissions()
             .then((givenPermissions) => CamerAwesomePermission.values);
@@ -453,18 +457,18 @@ class CamerawesomePlugin {
   }
 
   static Future<void> startAnalysis() {
-    return CameraInterface().startAnalysis();
+    return _getInterface().startAnalysis();
   }
 
   static Future<void> stopAnalysis() {
-    return CameraInterface().stopAnalysis();
+    return _getInterface().stopAnalysis();
   }
 
   static Future<void> setFilter(AwesomeFilter filter) {
-    return CameraInterface().setFilter(filter.matrix);
+    return _getInterface().setFilter(filter.matrix);
   }
 
   static Future<void> setMirrorFrontCamera(bool mirrorFrontCamera) {
-    return CameraInterface().setMirrorFrontCamera(mirrorFrontCamera);
+    return _getInterface().setMirrorFrontCamera(mirrorFrontCamera);
   }
 }

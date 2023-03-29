@@ -1,13 +1,13 @@
 // ignore_for_file: close_sinks
 
 import 'dart:async';
-import 'dart:io';
 import 'dart:ui';
 
 import 'package:camerawesome/camerawesome_plugin.dart';
 import 'package:camerawesome/pigeon.dart';
 import 'package:camerawesome/src/orchestrator/models/sensor_type.dart';
 import 'package:rxdart/rxdart.dart';
+import 'package:universal_platform/universal_platform.dart';
 
 /// This class handle the current state of the camera
 /// - [PhotoCameraState]
@@ -177,7 +177,7 @@ class CameraContext {
     required PreviewSize flutterPreviewSize,
     AndroidFocusSettings? androidFocusSettings,
   }) async {
-    if (Platform.isIOS) {
+    if (UniversalPlatform.isIOS) {
       final xPercentage = flutterPosition.dx / flutterPreviewSize.width;
       final yPercentage = flutterPosition.dy / flutterPreviewSize.height;
 

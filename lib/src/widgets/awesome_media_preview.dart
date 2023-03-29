@@ -1,11 +1,11 @@
-import 'dart:io';
-
 import 'package:camerawesome/src/orchestrator/models/media_capture.dart';
 import 'package:camerawesome/src/widgets/camera_awesome_builder.dart';
 import 'package:camerawesome/src/widgets/utils/awesome_bouncing_widget.dart';
 import 'package:camerawesome/src/widgets/utils/awesome_oriented_widget.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:universal_io/io.dart';
+import 'package:universal_platform/universal_platform.dart';
 
 class AwesomeMediaPreview extends StatelessWidget {
   final MediaCapture? mediaCapture;
@@ -51,7 +51,7 @@ class AwesomeMediaPreview extends StatelessWidget {
         return Center(
           child: Padding(
             padding: const EdgeInsets.all(8),
-            child: Platform.isIOS
+            child: UniversalPlatform.isIOS
                 ? const CupertinoActivityIndicator(
                     color: Colors.white,
                   )

@@ -1,8 +1,9 @@
-import 'dart:io';
 import 'dart:isolate';
 
-import 'package:image/image.dart' as img;
 import 'package:camerawesome/camerawesome_plugin.dart';
+import 'package:image/image.dart' as img;
+import 'package:universal_io/io.dart';
+import 'package:universal_platform/universal_platform.dart';
 
 class FilterHandler {
   Isolate? photoFilterIsolate;
@@ -11,7 +12,7 @@ class FilterHandler {
     required String path,
     required AwesomeFilter filter,
   }) async {
-    if (Platform.isIOS && filter.id != AwesomeFilter.None.id) {
+    if (UniversalPlatform.isIOS && filter.id != AwesomeFilter.None.id) {
       photoFilterIsolate?.kill(priority: Isolate.immediate);
 
       ReceivePort port = ReceivePort();

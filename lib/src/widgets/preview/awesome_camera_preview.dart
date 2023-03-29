@@ -1,11 +1,11 @@
 import 'dart:async';
-import 'dart:io';
 import 'dart:math';
 
 import 'package:camerawesome/camerawesome_plugin.dart';
 import 'package:camerawesome/pigeon.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:universal_platform/universal_platform.dart';
 
 enum CameraPreviewFit {
   fitWidth,
@@ -116,7 +116,7 @@ class AwesomeCameraPreviewState extends State<AwesomeCameraPreview> {
     if (_textureId == null || _previewSize == null || _aspectRatio == null) {
       return widget.loadingWidget ??
           Center(
-            child: Platform.isIOS
+            child: UniversalPlatform.isIOS
                 ? const CupertinoActivityIndicator()
                 : const CircularProgressIndicator(),
           );

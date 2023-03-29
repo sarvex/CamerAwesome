@@ -1,4 +1,3 @@
-import 'dart:io';
 import 'dart:ui';
 
 import 'package:camerawesome/camerawesome_plugin.dart';
@@ -7,6 +6,7 @@ import 'package:camerawesome/src/orchestrator/camera_context.dart';
 import 'package:camerawesome/src/orchestrator/states/handlers/filter_handler.dart';
 import 'package:camerawesome/src/photofilters/filters/filters.dart';
 import 'package:rxdart/rxdart.dart';
+import 'package:universal_io/io.dart';
 
 class PhotoFilterModel {
   PhotoFilterModel(this.path, this.imageFile, this.filter);

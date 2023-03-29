@@ -1,9 +1,9 @@
-import 'dart:io';
-
 import 'package:camera_app/widgets/mini_video_player.dart';
 import 'package:camerawesome/camerawesome_plugin.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:universal_io/io.dart';
+import 'package:universal_platform/universal_platform.dart';
 
 class CustomMediaPreview extends StatelessWidget {
   final MediaCapture? mediaCapture;
@@ -51,7 +51,7 @@ class CustomMediaPreview extends StatelessWidget {
         return Center(
           child: Padding(
             padding: const EdgeInsets.all(8),
-            child: Platform.isIOS
+            child: UniversalPlatform.isIOS
                 ? const CupertinoActivityIndicator(color: Colors.white)
                 : const CircularProgressIndicator(color: Colors.white),
           ),
