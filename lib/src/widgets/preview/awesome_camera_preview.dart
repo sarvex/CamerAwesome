@@ -178,7 +178,7 @@ class AwesomeCameraPreviewState extends State<AwesomeCameraPreview> {
             _previousCroppedSize ??=
                 Size(_croppedSize!.width, _croppedSize!.height);
 
-            final previewTexture = Texture(textureId: _textureId!);
+            final previewTexture = CamerawesomePlugin.buildPreview(_textureId!);
 
             final preview = SizedBox(
               width: constrainedSize.width,

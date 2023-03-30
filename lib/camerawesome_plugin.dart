@@ -9,6 +9,7 @@ import 'package:camerawesome/src/orchestrator/models/video_options.dart';
 import 'package:camerawesome/src/web/camerawesome_web.dart';
 import 'package:collection/collection.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:universal_platform/universal_platform.dart';
 
@@ -51,7 +52,7 @@ class CamerawesomePlugin {
   static bool printLogs = false;
 
   static CameraInterface _getInterface() =>
-      kIsWeb ? CamerawesomeWeb() : CameraInterface();
+      UniversalPlatform.isWeb ? CamerawesomeWeb() : CameraInterface();
 
   static Future<bool?> checkiOSPermissions() async {
     final permissions = await _getInterface().checkPermissions();
@@ -87,6 +88,10 @@ class CamerawesomePlugin {
   }
 
   static Stream<CameraOrientations>? getNativeOrientation() {
+    if (UniversalPlatform.isWeb) {
+      return null;
+    }
+
     _orientationStream ??= _orientationChannel
         .receiveBroadcastStream('orientationChannel')
         .transform(StreamTransformer<dynamic, CameraOrientations>.fromHandlers(
@@ -447,6 +452,10 @@ class CamerawesomePlugin {
         // TODO iOS Return only permissions that were given
         return CamerawesomePlugin.checkiOSPermissions()
             .then((givenPermissions) => CamerAwesomePermission.values);
+      } else if (UniversalPlatform.isWeb) {
+        return _getInterface()
+            .requestPermissions(saveGpsLocation)
+            .then((givenPermissions) => CamerAwesomePermission.values);
       }
     } catch (e) {
       printLog("failed to check permissions here...");
@@ -470,5 +479,12 @@ class CamerawesomePlugin {
 
   static Future<void> setMirrorFrontCamera(bool mirrorFrontCamera) {
     return _getInterface().setMirrorFrontCamera(mirrorFrontCamera);
+  }
+
+  static Widget buildPreview(final int textureId) {
+    if (UniversalPlatform.isWeb) {
+      return CamerawesomeWeb().buildPreview();
+    }
+    return Texture(textureId: textureId);
   }
 }
