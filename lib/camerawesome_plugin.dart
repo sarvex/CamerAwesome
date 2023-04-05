@@ -117,6 +117,8 @@ class CamerawesomePlugin {
   }
 
   static Stream<CameraPhysicalButton>? listenPhysicalButton() {
+    if (UniversalPlatform.isWeb) return null;
+
     _physicalButtonStream ??= _physicalButtonChannel
         .receiveBroadcastStream('physicalButtonChannel')
         .transform(
